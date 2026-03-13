@@ -10,10 +10,13 @@ load_dotenv()
 class NovaClient:
     def __init__(self):
         # Initialize the Bedrock client using your credentials from .env
+        # The 'bedrock-runtime' is the specific client used for running inference/invoking models.
         self.bedrock = boto3.client(
             service_name='bedrock-runtime', 
             region_name=os.getenv("AWS_REGION", "us-east-1")
         )
+        # Using environment variables for IDs makes it easy to switch model versions 
+        # (e.g., from v1 to v2) without touching the code.
         self.lite_model = os.getenv("NOVA_LITE_ID")
         self.pro_model = os.getenv("NOVA_PRO_ID")
 
@@ -23,6 +26,7 @@ class NovaClient:
         and Thinking-Block handling.
         """
         # 1. Prepare Multimodal Content
+        # since Nova models treat all inputs as list of blocks we must wrap even plain text in a dictionary and specify type as 'text'
         content = [{"text": prompt}]
         
         if image_base64:
@@ -39,11 +43,12 @@ class NovaClient:
             "system": [{"text": system_prompt}],
             "inferenceConfig": {
                 "max_new_tokens": 1000,
-                "temperature": 0.7
+                "temperature": 0.7 #balances creativity with focus
             }
         })
 
         # 2. Exponential Backoff (Retry Logic)
+        # Since APIs throttle you if you send too many requests at once
         max_retries = 3
         for attempt in range(max_retries):
             try:
