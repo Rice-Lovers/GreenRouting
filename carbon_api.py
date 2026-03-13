@@ -4,21 +4,19 @@ from dotenv import load_dotenv
 
 load_dotenv() #loads secret keys from .env file in encrypted text
 
-def get_normalized_carbon_intensity():
+def get_carbon_data():
     """
-    Fetches real-time intensity and normalizes it to a 0-100 scale
-    to match the GreenRouter.route_request expectations.
+    Fetches intensity and returns both raw and normalized values.
+    Returns: (normalized_score, raw_gCO2)
     """
-    api_key = os.getenv("EMAPS_API_KEY") #Retrieves pvt Electricity Maps API key
+    api_key = os.getenv("EMAPS_API_KEY")
     if not api_key:
-        print("Error: EMAPS_API_KEY not found. Ensure your local .env is set up.")
-        return 50 # Fallback to neutral intensity
-      
-    zone = "US-PJM" # Specifies Power Grid Zone = Virginia / us-east-1 grid
-    url = f"https://api.electricitymaps.com/v3/carbon-intensity/latest?zone={zone}" 
+        return 50, 400 # Fallback values
+    zone = "US-PJM"  # Specifies Power Grid Zone = Virginia / us-east-1 grid
+    url = f"https://api.electricitymaps.com/v3/carbon-intensity/latest?zone={zone}"
     #url constructs the specific web address needed to ask Electricity Maps for the latest carbon data for that zone.
     
-    headers = {"auth-token": api_key}  #prepares password for for API access
+    headers = {"auth-token": api_key} #prepares password for for API access
     
     try:
         response = requests.get(url, headers=headers) #sends request to the server
@@ -31,7 +29,7 @@ def get_normalized_carbon_intensity():
         # 0 = Very Green, 100 = Very Dirty
         
         normalized = min((raw_intensity / 800) * 100, 100)
-        return int(normalized)
+        return int(normalized), raw_intensity
     except Exception as e:
         print(f"Carbon API Error: {e}")
-        return 50  # Fallback to mid-range intensity
+        return 50, 400  # Fallback to mid-range intensity
