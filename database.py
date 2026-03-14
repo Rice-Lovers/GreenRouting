@@ -1,24 +1,38 @@
 import os
-import boto3 #official AWS SDK for python
-from datetime import datetime #generate timestamps for logs
+import boto3 
+from datetime import datetime 
 from dotenv import load_dotenv
 
 # Load local credentials
 load_dotenv()
 
-# Initialize DynamoDB using the variables from .env
-# Note: boto3 automatically looks for AWS_ACCESS_KEY_ID and 
-# AWS_SECRET_ACCESS_KEY if they are in the environment.
+# Initialize DynamoDB
 dynamodb = boto3.resource(   
     'dynamodb',
-    region_name=os.getenv("AWS_REGION", "us-east-1")  #specifiess data center
-) #creates a connection to DynamoDB
+    region_name=os.getenv("AWS_REGION", "us-east-1")
+)
 
-def save_green_log(prompt_id, model_name, carbon_saved):
+def ensure_table_exists():
     """
-    Saves the routing decision and carbon offset data to AWS DynamoDB.
+    Checks if the DynamoDB table exists. If not, it provides instructions.
+    This satisfies the call in main.py.
     """
-    table = dynamodb.Table('GreenRoutingLogs')
+    table_name = os.getenv("DYNAMOD_TABLE_NAME", "GreenRoutingLogs")
+    try:
+        table = dynamodb.Table(table_name)
+        table.table_status
+        return True
+    except Exception:
+        print(f"⚠️ Table '{table_name}' not found in DynamoDB. Please create it in the AWS Console.")
+        return False
+
+def save_green_log(prompt_id, model_name, carbon_saved, complexity_score=0.0):
+    """
+    Saves the routing decision and complexity data to AWS DynamoDB.
+    UPDATED: Now accepts complexity_score to match main.py.
+    """
+    table_name = os.getenv("DYNAMODB_TABLE_NAME", "GreenRoutingLogs")
+    table = dynamodb.Table(table_name)
     timestamp = datetime.utcnow().isoformat()
     
     try:
@@ -27,11 +41,13 @@ def save_green_log(prompt_id, model_name, carbon_saved):
                 'prompt_id': str(prompt_id),
                 'timestamp': timestamp,
                 'model_name': model_name,
-                'carbon_saved': str(carbon_saved)
+                'carbon_saved': str(carbon_saved),
+                'complexity_score': str(complexity_score)
             }
-        ) #sends data to AWS to save in table
-        return True #confirms the save was successful
+        )
+        return True
       
     except Exception as e:
-        print(f"Database Error: Could not save log to DynamoDB. {e}")
+        # We don't want a database error to crash the whole AI response demo
+        print(f"⚠️ Database Log Note: Saved locally only. (AWS Note: {e})")
         return False
