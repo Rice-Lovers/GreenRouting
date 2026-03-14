@@ -1,37 +1,43 @@
-import os #allows script to interact with OS and read environmental variables
-import requests #library for http requests
-from dotenv import load_dotenv 
+import os
+import requests
+from dotenv import load_dotenv
 
-load_dotenv() #loads secret keys from .env file in encrypted text
+# Load .env with override=True to ignore global system AWS/API variables
+load_dotenv(override=True)
 
 def get_carbon_data():
     """
-    Fetches real-time intensity and normalizes it to a 0-100 scale
-    to match the GreenRouter.route_request expectations.
+    Fetches real-time carbon intensity for the Mid-Atlantic (us-east-1) grid
+    and returns both the raw and normalized (0-100) values.
     """
-    api_key = os.getenv("EMAPS_API_KEY") #Retrieves pvt Electricity Maps API key
-    if not api_key:
-        print("Error: EMAPS_API_KEY not found. Ensure your local .env is set up.")
-        return 50 # Fallback to neutral intensity
-      
-    zone = "US-PJM" # Specifies Power Grid Zone = Virginia / us-east-1 grid
-    url = f"https://api.electricitymaps.com/v3/carbon-intensity/latest?zone={zone}" 
-    #url constructs the specific web address needed to ask Electricity Maps for the latest carbon data for that zone.
+    api_key = os.getenv("EMAPS_API_KEY")
+    zone = "US-MIDA-PJM" # Defaults to Virginia grid
     
-    headers = {"auth-token": api_key}  #prepares password for for API access
+    if not api_key:
+        print("❌ Error: EMAPS_API_KEY missing from .env")
+        return 0, 50  # Returns (raw, normalized) fallbacks
+      
+    url = f"https://api.electricitymaps.com/v3/carbon-intensity/latest?zone={zone}"
+    headers = {"auth-token": api_key}
     
     try:
-        response = requests.get(url, headers=headers) #sends request to the server
-        response.raise_for_status() #checks if request was successful
-        data = response.json() 
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Electricity Maps v3 uses 'carbonIntensity' as the primary key
         raw_intensity = data.get('carbonIntensity', 0)
         
-        # Assume 0-800 gCO2eq/kWh range for US-PJM
-        # Normalize: (Current / Max Expected) * 100 
-        # 0 = Very Green, 100 = Very Dirty
-        
+        # Standard normalization: (Current / 800) * 100
+        # 0-800 gCO2eq/kWh is the standard range for the US-MIDA-PJM grid
         normalized = min((raw_intensity / 800) * 100, 100)
-        return int(normalized)
+        
+        return int(raw_intensity), int(normalized)
+        
+    except requests.exceptions.HTTPError as e:
+        # Specifically catches 400 (Bad Zone) or 401 (Bad Key) errors
+        print(f"⚠️ API Client Error: {e}")
+        return 0, 50
     except Exception as e:
-        print(f"Carbon API Error: {e}")
-        return 50  # Fallback to mid-range intensity
+        print(f"⚠️ General Carbon API Error: {e}")
+        return 0, 50
