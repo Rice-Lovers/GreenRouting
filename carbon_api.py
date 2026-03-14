@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv() #loads secret keys from .env file in encrypted text
 
-def get_normalized_carbon_intensity():
+def get_carbon_data():
     """
     Fetches real-time intensity and normalizes it to a 0-100 scale
     to match the GreenRouter.route_request expectations.
