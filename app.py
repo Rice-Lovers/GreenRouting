@@ -173,7 +173,7 @@ st.markdown(f"""
 
         /* 8. Agentic Dialogue: White text visibility */
         .agent-dialogue-header {{
-            color: white !important;
+            color: {COLORS['bg_white']}; !important;
             font-weight: bold;
             margin-bottom: 10px;
         }}
@@ -183,6 +183,33 @@ st.markdown(f"""
             border-radius: 12px !important;
             padding: 15px !important;
             border: 1px solid rgba(255,255,255,0.1);
+        }}
+        /* Force all text inside the chat container to be white */
+        [data-testid="stChatMessage"] p, 
+        [data-testid="stChatMessage"] span,
+        [data-testid="stChatMessage"] div {{
+            color: #FFFFFF !important;
+            font-size: 1rem !important;
+        }}
+
+        /* Target the specific "Assistant" and "User" bubble backgrounds */
+        /* This ensures the bubbles don't default to a grey that hides your text */
+        [data-testid="stChatMessage"] {{
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 10px !important;
+            padding: 10px !important;
+            margin-bottom: 10px !important;
+        }}
+
+        /* 3. Fix the "Model Selected" bold text */
+        [data-testid="stChatMessage"] strong {{
+            color: #FA9F42 !important; /* COLORS['sand'] for the model name */
+        }}
+
+        /* 4. Ensure code blocks or technical outputs are visible */
+        [data-testid="stChatMessage"] code {{
+            background-color: #2B4162 !important; /* COLORS['blue'] */
+            color: #FFFFFF !important;
         }}
     </style>
 """, unsafe_allow_html=True)
@@ -251,11 +278,11 @@ with st.expander("📊 Comparative Analysis (Full Registry)", expanded=False):
             width=450, 
             height=250, 
             margin=dict(t=10,b=10,l=10,r=10), 
-            paper_bgcolor='rgba(0,0,0,0)', 
+            paper_bgcolor=COLORS['bg_white'], 
             plot_bgcolor='rgba(0,0,0,0)', 
             font=dict(size=10, color=COLORS['ink'])
         )
-        st.plotly_chart(fig_cost, width= "stretch") # Changed to False
+        st.plotly_chart(fig_cost, width= "stretch") 
         
     with col_b:
         st.markdown('<p class="plot-title">Latency Comparison (s)</p>', unsafe_allow_html=True)
@@ -265,11 +292,11 @@ with st.expander("📊 Comparative Analysis (Full Registry)", expanded=False):
             width=450, 
             height=250, 
             margin=dict(t=10,b=10,l=10,r=10), 
-            paper_bgcolor='rgba(0,0,0,0)', 
+            paper_bgcolor=COLORS['bg_white'], 
             plot_bgcolor='rgba(0,0,0,0)', 
             font=dict(size=10, color=COLORS['ink'])
         )
-        st.plotly_chart(fig_lat, width= "stretch") # Changed to False
+        st.plotly_chart(fig_lat, width= "stretch") 
 # --- DUAL COLUMN LAYOUT ---
 col_left, col_right = st.columns([1, 2.3], gap="large")
 
@@ -298,7 +325,7 @@ with col_left:
     """, unsafe_allow_html=True)
 
     # Registry Box
-    st.markdown('<div class="registry-box"><b>🌐 Active Registry</b><br>Eco: Nova, Llama, Claude, Mistral<br>Power: Pro, 70B, Sonnet, Large</div>', unsafe_allow_html=True)
+    st.markdown('<div class="registry-box"><b>🌐 Active Registry</b><br>Eco: Nova, Llama, Claude, Mistral<br>Power: Nova Pro, Llama 70B, Claude Sonnet, Mistral Large</div>', unsafe_allow_html=True)
 
 with col_right:
     st.markdown(f"<h3 style='color:{COLORS['bg_white']}; margin-top:0;'>💬 Carbon-Aware Agent</h3>", unsafe_allow_html=True)
@@ -306,7 +333,7 @@ with col_right:
     with chat_container:
         st.markdown('<div id="chat_box"></div>', unsafe_allow_html=True)
         if not st.session_state.history:
-            st.caption("Ready for dispatch.")
+            st.markdown('<p style="color: #FFFFFF; opacity: 0.8; font-size: 0.8rem; margin-bottom: 10px;">Ready for dispatch.</p>', unsafe_allow_html=True)
         for entry in st.session_state.history:
             with st.chat_message("user"): st.markdown(entry['prompt'])
             with st.chat_message("assistant", avatar="🌿"):
