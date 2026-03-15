@@ -12,10 +12,17 @@ def get_carbon_data():
     """
     api_key = os.getenv("EMAPS_API_KEY")
     zone = "US-MIDA-PJM" # Defaults to Virginia grid
+
+    # Energy Proxies (E) in kWh per request ---
+    # Based on parameter scale: Eco (~3B-8B) vs Power (70B+)
+    E_PROXIES = {
+        "ECO": 0.0002,   # Small models
+        "POWER": 0.0025  # Large models
+    }
     
     if not api_key:
         print("❌ Error: EMAPS_API_KEY missing from .env")
-        return 0, 50  # Returns (raw, normalized) fallbacks
+        return 420, E-PROXIES  # Returns (raw, normalized) fallbacks
       
     url = f"https://api.electricitymaps.com/v3/carbon-intensity/latest?zone={zone}"
     headers = {"auth-token": api_key}
@@ -26,13 +33,13 @@ def get_carbon_data():
         data = response.json()
         
         # Electricity Maps v3 uses 'carbonIntensity' as the primary key
-        raw_intensity = data.get('carbonIntensity', 0)
+        raw_intensity = data.get('carbonIntensity', 420)
         
         # Standard normalization: (Current / 800) * 100
         # 0-800 gCO2eq/kWh is the standard range for the US-MIDA-PJM grid
         normalized = min((raw_intensity / 800) * 100, 100)
         
-        return int(raw_intensity), int(normalized)
+        return int(raw_intensity), E-PROXIES
         
     except requests.exceptions.HTTPError as e:
         # Specifically catches 400 (Bad Zone) or 401 (Bad Key) errors
