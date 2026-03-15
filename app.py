@@ -45,7 +45,7 @@ st.markdown(f"""
             padding-top: 8rem !important;
             margin: 0 auto;
         }}
-        
+        /*this is for the main background*/
         .stApp {{ background-color: {COLORS['bg_white']} !important; }}
         
         /* Fixed Header */
@@ -62,7 +62,7 @@ st.markdown(f"""
             background-color: {COLORS['bg_white']} !important;
         }}
 
-       
+
 
         /* Unified Dashboard Box */
         .main-workspace {{
@@ -80,7 +80,7 @@ st.markdown(f"""
         /* Mission Banner */
         .mission-banner {{
             background: {COLORS['blue']};
-            color: white; 
+            color: white; /*text color*/
             padding: 20px 20px; 
             border-radius: 12px;
             border-left: 8px solid {COLORS['sand']};
@@ -172,9 +172,9 @@ total_session_savings = sum(e.get('saved', 0) for e in history)
 
 st.markdown(f"""
     <div class="fixed-header">
-        <div style="display: flex; flex-direction: column;">
+        <div style="display: flex; flex-direction: column; justify-content: center;">
             <h1 style="margin: 0; color: white; font-size: 32px; letter-spacing: -1px;">🌿 GreenRouting</h1>
-            <span style="color: {COLORS['sand']}; font-size: 14px; text-transform: uppercase;">Agentic Decarbonization Engine</span>
+            <p style="margin: 0; padding-bottom: 8px; color: {COLORS['sand']}; font-size: 14px; text-transform: uppercase;">Agentic Decarbonization Engine</p>
         </div>
         <div style="display: flex; gap: 50px; text-align: right; color: white;">
             <div><p style="margin:0; font-size:12px; opacity:0.7;">PROMPT COST</p><b style="font-size:22px;">${current_prompt_cost:.2f}</b></div>
@@ -213,22 +213,38 @@ with col_left:
             # Cost Analysis Plot
             st.markdown('<div class="plot-title">Cost Analysis ($)</div>', unsafe_allow_html=True)
             fig_cost = go.Figure(data=[
-                go.Bar(name='Used', x=['Current'], y=[0.06 if is_lite else 0.90], marker_color=COLORS['emerald']),
-                go.Bar(name='Avoided', x=['Pro Fallback'], y=[0.90 if is_lite else 0.00], marker_color=COLORS['wine'])
+                go.Bar(name='Used', x=['Nova Lite'], y=[0.06 if is_lite else 0.90], marker_color=COLORS['emerald']),
+                go.Bar(name='Avoided', x=['Nova Pro'], y=[0.90 if is_lite else 0.00], marker_color=COLORS['wine'])
             ])
-            fig_cost.update_layout(height=180, margin=dict(t=5,b=5,l=5,r=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig_cost, use_container_width=True)
+            fig_cost.update_layout(height=180, margin=dict(t=15,b=15,l=15,r=15), paper_bgcolor=COLORS['bg_white'], plot_bgcolor='rgba(0,0,0,0)')
+            st.plotly_chart(fig_cost, width='stretch')
             
-            # UPDATED: Added Latency Profile plot as a second comparative metric
-            st.markdown('<div class="plot-title">Latency Profile (s)</div>', unsafe_allow_html=True)
-            fig_lat = go.Figure(go.Scatter(
-                x=['Nova Lite', 'Nova Pro'], 
-                y=[0.4, 1.8], 
-                mode='lines+markers', 
-                line=dict(color=COLORS['ink'], width=3)
+            # Latency Profile plot (Horizontal Bar Chart)
+            st.markdown('<div class="plot-title" style="margin-top: 10px;">Latency Profile (s)</div>', unsafe_allow_html=True)
+            
+            # Highlight the used model in Emerald, and the avoided one in Wine
+            lat_colors = [
+                COLORS['emerald'] if is_lite else COLORS['wine'],  # Nova Lite color
+                COLORS['emerald'] if not is_lite else COLORS['wine'] # Nova Pro color
+            ]
+
+            fig_lat = go.Figure(go.Bar(
+                x=[0.4, 1.8],
+                y=['Nova Lite', 'Nova Pro'],
+                orientation='h',
+                marker_color=lat_colors,
+                width=0.4 # Makes the bars thinner and more modern looking
             ))
-            fig_lat.update_layout(height=180, margin=dict(t=5,b=5,l=5,r=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig_lat, use_container_width=True)
+            
+            fig_lat.update_layout(
+                height=180, 
+                margin=dict(t=15, b=40, l=15, r=15), # Added bottom margin for the axis title
+                paper_bgcolor=COLORS['bg_white'], 
+                plot_bgcolor=COLORS['bg_white'],
+                xaxis=dict(title="Seconds", showgrid=True, gridcolor='rgba(0,0,0,0.05)'),
+                yaxis=dict(showgrid=False)
+            )
+            st.plotly_chart(fig_lat, width='stretch')
         else:
             st.markdown(f"<p style='color:{COLORS['ink']}; opacity:0.8;'>Dispatch a task to see metrics.</p>", unsafe_allow_html=True)
 
@@ -291,5 +307,5 @@ with col_right:
             
         except Exception as e:
             st.error(f"Routing Error: {e}")
-      
+
 st.markdown('</div>', unsafe_allow_html=True)
