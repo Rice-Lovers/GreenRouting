@@ -203,5 +203,12 @@ cython_debug/
 
 # Marimo
 marimo/_static/
+
+# --- GreenRouting Custom Ignores ---
+.env
+.streamlit/
+client_secret.json
+*.pdf
+*.csv
 marimo/_lsp/
 __marimo__/
