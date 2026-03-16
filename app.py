@@ -25,8 +25,8 @@ if 'last_result' not in st.session_state:
 
 # --- NEXAVERSE COLOR PALETTE ---
 COLORS = {
-    "wine": "#721817",    
-    "sand": "#FA9F42",    
+    "wine": "#4A2545",    
+    "sand": "#FBBF24",    
     "blue": "#2B4162",    
     "emerald": "#0B6E4F", 
     "ink": "#031927",
@@ -43,14 +43,13 @@ st.markdown(f"""
             padding-left: 2rem !important;
             padding-right: 2rem !important;
             /* INCREASED: Forces the dashboard down to show the white background separation */
-            padding-top: 10.5rem !important; 
+            padding-top: 10.180px !important; 
             margin: 0 auto;
         }}
-            
         [data-testid="stHeader"] {{
             display: none !important;
-        }}
-        .stApp {{ background-color: {COLORS['bg_white']} !important; margin-top: -50px !important; }}
+        }}        
+        .stApp {{ background-color: {COLORS['ink']} !important;}}
 
        
         /* 2. Header Tab: */
@@ -59,7 +58,7 @@ st.markdown(f"""
             top: 0; !important;
             left: 0; 
             width: 100%; 
-            height: 150px;
+            height: 120px;
             background-color: {COLORS['wine']} !important;
             border-bottom: 4px solid {COLORS['sand']}; /* COLORS['sand'] */
             z-index: 999; 
@@ -277,12 +276,12 @@ with st.expander("📊 Comparative Analysis (Full Registry)", expanded=False):
         fig_cost.update_layout(
             width=450, 
             height=250, 
-            margin=dict(t=10,b=10,l=10,r=10), 
+            margin=dict(t=20,b=40,l=50,r=10), 
             paper_bgcolor=COLORS['bg_white'], 
             plot_bgcolor='rgba(0,0,0,0)', 
             font=dict(size=10, color=COLORS['ink'])
         )
-        st.plotly_chart(fig_cost, width= "stretch") 
+        st.plotly_chart(fig_cost, width= "stretch", theme=None) 
         
     with col_b:
         st.markdown('<p class="plot-title">Latency Comparison (s)</p>', unsafe_allow_html=True)
@@ -291,12 +290,12 @@ with st.expander("📊 Comparative Analysis (Full Registry)", expanded=False):
         fig_lat.update_layout(
             width=450, 
             height=250, 
-            margin=dict(t=10,b=10,l=10,r=10), 
+            margin=dict(t=20,b=40,l=50,r=10), 
             paper_bgcolor=COLORS['bg_white'], 
             plot_bgcolor='rgba(0,0,0,0)', 
             font=dict(size=10, color=COLORS['ink'])
         )
-        st.plotly_chart(fig_lat, width= "stretch") 
+        st.plotly_chart(fig_lat, width= "stretch",  theme=None) 
 # --- DUAL COLUMN LAYOUT ---
 col_left, col_right = st.columns([1, 2.3], gap="large")
 
