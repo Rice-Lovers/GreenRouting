@@ -3,6 +3,7 @@ import os
 import uuid
 import base64
 from datetime import datetime
+from rapidfuzz import process, fuzz # Ensure you: pip install rapidfuzz
 
 # --- THE FIX: Force Python to look in the current folder for imports ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,43 +27,58 @@ try:
     from router import GreenRouter
     from nova_client import NovaClient 
     from carbon_api import get_carbon_data
-    from database import save_green_log, ensure_table_exists
+    from database import save_green_log, ensure_table_exists, get_recent_logs
 except ImportError as e:
     print(f"❌ Critical Import Error: {e}")
     sys.exit(1)
 
+def check_semantic_cache(user_prompt):
+    """
+    Checks historical logs for a 90% match.
+    Returns the cached response if found, saving 100% of inference energy.
+    """
+    try:
+        recent_logs = get_recent_logs(limit=50) # Fetch from DynamoDB via database.py
+        if not recent_logs:
+            return None
+
+        # Extract only the prompts for matching
+        past_prompts = [log['prompt_text'] for log in recent_logs]
+        
+        # Fuzzy match logic
+        match = process.extractOne(user_prompt, past_prompts, scorer=fuzz.token_set_ratio)
+        
+        if match and match[1] > 90: # 90% Similarity Threshold
+            matched_text = match[0]
+            for log in recent_logs:
+                if log['prompt_text'] == matched_text:
+                    print(f"♻️ Semantic Cache Hit ({match[1]}%): Reusing answer.")
+                    return log['response_text']
+    except Exception as e:
+        print(f"⚠️ Cache Check Failed: {e}")
+    return None
+
 def calculate_sci_score(model_key, grid_intensity, e_proxies):
     """
-    Implements the SCI Formula: SCI = ((E * I) + M) / R
-    E = Energy per request (kWh)
-    I = Grid Intensity (gCO2eq/kWh)
-    M = Embodied Carbon (gCO2eq)
-    R = Functional Unit (1 Request)
+    Implements SCI = ((E * I) + M) / R
     """
-    # 1. Operational Emissions (E * I)
     tier = "POWER" if "pro" in model_key.lower() else "ECO"
-    e = e_proxies.get(tier, 0.0025)  # kWh/request
-    i = grid_intensity  # gCO2/kWh
-    operational_emissions = e * i
+    e = e_proxies.get(tier, 0.0025)
+    i = grid_intensity
+    operational = e * i
     
-    # 2. Embodied Carbon (M)
-    # Assume 1,500kg CO2eq per server / 4 year lifespan
-    # Amortized to hourly: ~42.8g/hour per server
-    # AI models use large GPU clusters. We estimate M per request:
-    # Eco models use ~1/16th of a server's resources for ~500ms
-    # Power models use ~1/4th of a server's resources for ~2000ms
-    if tier == "ECO":
-        m = 0.0075  # Estimated gCO2 per request for Lite models
-    else:
-        m = 0.0850  # Estimated gCO2 per request for Pro models
+    # Embodied Carbon (M)
+    m = 0.0075 if tier == "ECO" else 0.0850
+    if model_key == "SEMANTIC_CACHE":
+        return 0.0001 # Minimal disk-read energy only
         
-    # 3. SCI Calculation (R = 1 request)
-    sci_total = operational_emissions + m
-    return round(sci_total * 1000, 4) # Returning in milligrams (mg)
+    sci_total = operational + m
+    return round(sci_total * 1000, 4)
 
-def run_green_route(user_prompt, image_path=None):
+# --- CRITICAL FIX: Added session_id parameter here ---
+def run_green_route(user_prompt, image_path=None, session_id="GLOBAL"):
     """
-    Orchestrates the Multi-Agent GreenRouting workflow with SCI Math.
+    Orchestrates workflow with Cache-First logic, SCI Math, and Session Isolation.
     """
     router = GreenRouter()
     client = NovaClient()
@@ -79,62 +95,59 @@ def run_green_route(user_prompt, image_path=None):
         with open(image_path, "rb") as f:
             image_b64 = f.read()
 
-    # 3. Fetch Environmental Context
+    # 1. Semantic Cache Check
+    cached_response = check_semantic_cache(user_prompt)
+    
+    # 2. Fetch Environmental Context
     try:
         raw_co2, e_proxies = get_carbon_data()
-        if isinstance(raw_co2, str):
-            raw_co2 = int(raw_co2) if raw_co2.isdigit() else 450
+        raw_co2 = int(raw_co2) if str(raw_co2).isdigit() else 450
     except Exception as e:
-        print(f"⚠️ Carbon API failed: {e}. Using fallback.")
         raw_co2, e_proxies = 450, {"ECO": 0.0002, "POWER": 0.0025}
 
-    # 4. Multi-Agent Routing Decision
-    selected_key, decision_reason = router.route_request(
-        user_prompt, 
-        raw_co2, 
-        image_base64=image_b64
-    )
-    
-    model_id = MODEL_MAP.get(selected_key, MODEL_MAP["nova_lite"])
-    print(f"\n🌱 Grid Intensity: {raw_co2} gCO2/kWh")
+    # 3. IF CACHE HIT: Bypass Bedrock
+    if cached_response:
+        current_sci = calculate_sci_score("SEMANTIC_CACHE", raw_co2, e_proxies)
+        baseline_sci = calculate_sci_score("claude_pro", raw_co2, e_proxies)
+        carbon_saved = round(baseline_sci - current_sci, 2)
+        
+        # Log with session_id
+        save_green_log(prompt_id, "SEMANTIC_CACHE", carbon_saved, 0.05, user_prompt, cached_response, session_id=session_id)
+        
+        return {
+            "model": "♻️ SEMANTIC CACHE",
+            "response": cached_response,
+            "carbon_saved": carbon_saved,
+            "intensity": raw_co2,
+            "sci_score": current_sci
+        }
 
-    # 5. Execute AI Inference
+    # 4. Routing & Inference (Standard Path)
+    selected_key, decision_reason = router.route_request(user_prompt, raw_co2, image_b64)
+    model_id = MODEL_MAP.get(selected_key, MODEL_MAP["nova_lite"])
+    
     response = client.invoke_nova(model_id, user_prompt, image_base64=image_b64)
 
-    # 6. Self-Healing
+    # 5. Self-Healing
     if "lite" in selected_key.lower():
-        is_sufficient = client.self_healing_check(response, user_prompt)
-        if not is_sufficient:
-            print("🔄 Self-Healing Triggered...")
+        if not client.self_healing_check(response, user_prompt):
             selected_key = "claude_pro"
             model_id = MODEL_MAP[selected_key]
             response = client.invoke_nova(model_id, user_prompt, image_base64=image_b64)
 
-    # 7. SCI Metrics (The scientific approach)
-    # Calculate SCI for the chosen model vs. a baseline Pro model
+    # 6. Final Metrics
     current_sci = calculate_sci_score(selected_key, raw_co2, e_proxies)
     baseline_sci = calculate_sci_score("claude_pro", raw_co2, e_proxies)
-    
-    # Carbon saved is the delta between baseline and selected
     carbon_saved = max(0, round(baseline_sci - current_sci, 2))
+    complexity = router.analyze_complexity(user_prompt, image_b64)
     
-    try:
-        complexity = router.analyze_complexity(user_prompt, image_b64)
-        save_green_log(prompt_id, selected_key, carbon_saved, complexity)
-    except Exception as e:
-        print(f"⚠️ Logging failed: {e}")
+    # 7. Log to DB with session_id
+    save_green_log(prompt_id, selected_key, carbon_saved, complexity, user_prompt, response, session_id=session_id)
     
     return {
         "model": selected_key.upper().replace("_", " "),
         "response": response,
         "carbon_saved": carbon_saved,
         "intensity": int(raw_co2),
-        "sci_score": current_sci # New field for UI
+        "sci_score": current_sci
     }
-
-if __name__ == "__main__":
-    test_prompt = "How does embodied carbon impact AI infrastructure?"
-    result = run_green_route(test_prompt)
-    print(f"\n✅ SCI Execution Finished")
-    print(f"SCI Score (Total Footprint): {result['sci_score']} mg")
-    print(f"Carbon Avoided (vs Baseline): {result['carbon_saved']} mg")
