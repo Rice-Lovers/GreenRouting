@@ -1,0 +1,8 @@
+streamlit
+boto3
+plotly
+pandas
+python-dotenv
+rapidfuzz
+requests
+reportlab
