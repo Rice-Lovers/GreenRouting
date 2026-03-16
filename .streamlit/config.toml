@@ -1,5 +1,6 @@
 [theme]
-backgroundColor = "#F9F7F3"          # Soft warm off‑white
-secondaryBackgroundColor = "#FFFFFF" # Cards / panels
-textColor = "#1F2933"                # Deep slate for contrast
-primaryColor = "#2A9D8F"             # Modern teal green accent
+base = "dark"
+primaryColor = "#FBBF24"
+backgroundColor = "#0D1B2A"
+secondaryBackgroundColor = "#0D1B2A"
+textColor = "#FFFFFF"
