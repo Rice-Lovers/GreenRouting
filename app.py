@@ -25,12 +25,12 @@ if 'last_result' not in st.session_state:
 
 # --- NEXAVERSE COLOR PALETTE ---
 COLORS = {
-    "wine": "#721817",    
-    "sand": "#FA9F42",    
+    "dgreen": "#173E33",    
+    "lgreen": "#63BC69",    
     "blue": "#2B4162",    
-    "emerald": "#0B6E4F", 
-    "ink": "#031927",
-    "charcoal": "#0D1B2A",
+    "orange": "#FE9547 ", 
+    "ink": "#0F1E25",
+    "charcoal": "#0D1B2A", #didn't use
     "bg_white": "#FFFFFF"
 }
 
@@ -43,14 +43,13 @@ st.markdown(f"""
             padding-left: 2rem !important;
             padding-right: 2rem !important;
             /* INCREASED: Forces the dashboard down to show the white background separation */
-            padding-top: 10.5rem !important; 
+            padding-top: 120px !important; 
             margin: 0 auto;
         }}
-            
         [data-testid="stHeader"] {{
             display: none !important;
-        }}
-        .stApp {{ background-color: {COLORS['bg_white']} !important; margin-top: -50px !important; }}
+        }}        
+        .stApp {{ background-color: {COLORS['ink']} !important;}}
 
        
         /* 2. Header Tab: */
@@ -59,9 +58,9 @@ st.markdown(f"""
             top: 0; !important;
             left: 0; 
             width: 100%; 
-            height: 150px;
-            background-color: {COLORS['wine']} !important;
-            border-bottom: 4px solid {COLORS['sand']}; /* COLORS['sand'] */
+            height: 120px;
+            background-color: {COLORS['dgreen']} !important;
+            border-bottom: 4px solid {COLORS['lgreen']};
             z-index: 999; 
             padding: 0px 60px; 
             display: flex;
@@ -93,20 +92,28 @@ st.markdown(f"""
 
         /* 3. Analytics Dropdown: */
         .stExpander {{
-            border: 2px solid {COLORS['sand']} !important;
-            background-color: {COLORS['sand']} !important;
+            border: 2px solid {COLORS['lgreen']} !important;
+            background-color: {COLORS['lgreen']} !important;
             border-radius: 12px !important;
             margin-bottom: 20px !important;
         }}
-        
+        /* Target all possible states: normal, hover, focus, and OPEN */
+        [data-testid="stExpander"] details summary,
+        [data-testid="stExpander"] details summary:hover,
+        [data-testid="stExpander"] details summary:focus,
+        [data-testid="stExpander"] details summary:active,
+        [data-testid="stExpander"] details[open] summary {{
+            background-color: {COLORS['lgreen']} !important;
+            border-radius: 12px !important;
+        }}
         /* Targets the clickable header of the dropdown specifically */
         [data-testid="stExpanderSummary"] {{
-            background-color: {COLORS['sand']} !important;
+            background-color: {COLORS['lgreen']} !important;
             border-radius: 12px !important;
             height: 55px !important;
         }}
         
-        /* Forces the text inside the yellow dropdown to be Ink (Dark Blue/Black) */
+        /* Forces the text inside the green dropdown to be Ink (Dark Blue/Black) */
         [data-testid="stExpanderSummary"] p {{
             color: {COLORS['ink']} !important;
             font-weight: bold !important;
@@ -114,7 +121,7 @@ st.markdown(f"""
         }}
 
         [data-testid="stExpanderDetails"] {{
-            background-color: {COLORS['sand']} !important;
+            background-color: {COLORS['lgreen']} !important;
             border-radius: 0 0 12px 12px !important;
         }}
 
@@ -124,28 +131,28 @@ st.markdown(f"""
             color: white; 
             padding: 20px; 
             border-radius: 12px;
-            border-left: 8px solid {COLORS['sand']};
+            border-left: 8px solid {COLORS['lgreen']};
             margin-bottom: 15px;
         }}
 
         /* 5. Grid Card: */
         .grid-card {{
-            background-color: {COLORS['emerald']} !important;
+            background-color: {COLORS['orange']} !important;
             color: white;
             border-radius: 12px;
             padding: 20px;
-            border-left: 8px solid {COLORS['sand']};
+            border-left: 8px solid {COLORS['lgreen']};
         }}
 
         
-        /* 6. Impact Metrics Box: Changed to Wine with improved font visibility */
+        /* 6. Impact Metrics Box: Changed to dgreen with improved font visibility */
         .impact-box {{
-            background-color: {COLORS['wine']};
+            background-color: {COLORS['dgreen']};
             color: white;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            border-left: 8px solid {COLORS['sand']};
+            border-left: 8px solid {COLORS['lgreen']};
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }}
         
@@ -158,7 +165,7 @@ st.markdown(f"""
         }}
         
         .metric-label {{ font-size: 0.85rem; color: #FFFFFF; opacity: 0.9; font-weight: 500; }}
-        .metric-value {{ font-size: 1rem; font-weight: bold; color: {COLORS['sand']}; }}
+        .metric-value {{ font-size: 1rem; font-weight: bold; color: {COLORS['lgreen']}; }}
 
         /* 7. Registry Box: */
         .registry-box {{
@@ -168,7 +175,7 @@ st.markdown(f"""
             padding: 15px;
             margin-top: 20px;
             font-size: 0.85rem;
-            border-left: 8px solid {COLORS['emerald']};
+            border-left: 8px solid {COLORS['orange']};
         }}
 
         /* 8. Agentic Dialogue: White text visibility */
@@ -182,7 +189,7 @@ st.markdown(f"""
             background-color: {COLORS['ink']} !important;
             border-radius: 12px !important;
             padding: 15px !important;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 10px solid rgba(255,255,255,0.1);
         }}
         /* Force all text inside the chat container to be white */
         [data-testid="stChatMessage"] p, 
@@ -203,13 +210,49 @@ st.markdown(f"""
 
         /* 3. Fix the "Model Selected" bold text */
         [data-testid="stChatMessage"] strong {{
-            color: #FA9F42 !important; /* COLORS['sand'] for the model name */
+            color: #FE9547 !important; /* COLORS['lgreen'] for the model name */
         }}
 
         /* 4. Ensure code blocks or technical outputs are visible */
         [data-testid="stChatMessage"] code {{
             background-color: #2B4162 !important; /* COLORS['blue'] */
             color: #FFFFFF !important;
+        }}
+        /* --- 9. Bottom Chat Input Styling --- */
+        
+        /* 1. Keep the outer wrapper transparent so it doesn't look bulky */
+        [data-testid="stChatInput"] {{
+            background-color: transparent !important;
+        }}
+        
+        /* 2. Target the actual input "pill" (the first div inside the wrapper) */
+        [data-testid="stChatInput"] > div {{
+            background-color: {COLORS['charcoal']} !important;
+            border: 1px solid {COLORS['orange']} !important; /* Orange border here! */
+            border-radius: 12px !important;
+        }}
+        
+        /* 3. Force the grey text area inside to become completely transparent */
+        .stChatInputTextArea > div {{
+            background-color: transparent !important;
+        }}
+        
+        /* 4. Make the text you type white */
+        [data-testid="stChatInputTextArea"] textarea {{
+            color: {COLORS['bg_white']} !important;
+        }}
+
+        /* --- 10. Browse Files Button Styling --- */
+        [data-testid="stBaseButton-secondary"] {{
+            background-color: {COLORS['orange']} !important;
+            color: {COLORS['ink']} !important; 
+            border: none !important;
+            font-weight: bold !important;
+        }}
+
+        /* Forces the chart titles to be Pure Black */
+        .plot-title {{
+            color: #000000 !important;
         }}
     </style>
 """, unsafe_allow_html=True)
@@ -241,7 +284,7 @@ st.markdown(f"""
     <div class="fixed-header">
         <div class="header-content">
             <h1 style="color: white; font-size: 38px; letter-spacing: -1px;">🌿 GreenRouting</h1>
-            <p style="color: {COLORS['sand']}; font-size: 14px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
+            <p style="color: {COLORS['lgreen']}; font-size: 14px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
                 Agentic Decarbonization Engine
             </p>
         </div>
@@ -256,7 +299,7 @@ st.write("")
 # Mission Banner
 st.markdown(f"""
     <div class="mission-banner">
-        <h3 style="margin:0; color:{COLORS['sand']}; font-size: 1.2rem;">The Mission</h3>
+        <h3 style="margin:0; color:{COLORS['lgreen']}; font-size: 1.2rem;">The Mission</h3>
         <p style="font-size: 0.95rem; margin-top:5px; opacity:0.9; line-height: 1.4;">
             Optimizing AI Software Carbon Intensity (SCI) through grid-aware routing.
         </p>
@@ -272,40 +315,40 @@ with st.expander("📊 Comparative Analysis (Full Registry)", expanded=False):
     
     with col_a:
         st.markdown('<p class="plot-title">Cost Comparison ($)</p>', unsafe_allow_html=True)
-        fig_cost = go.Figure(go.Bar(x=models, y=costs, marker_color=COLORS['emerald']))
+        fig_cost = go.Figure(go.Bar(x=models, y=costs, marker_color=COLORS['orange']))
         # Explicit width and height for a consistent look
         fig_cost.update_layout(
             width=450, 
             height=250, 
-            margin=dict(t=10,b=10,l=10,r=10), 
+            margin=dict(t=20,b=40,l=50,r=10), 
             paper_bgcolor=COLORS['bg_white'], 
             plot_bgcolor='rgba(0,0,0,0)', 
             font=dict(size=10, color=COLORS['ink'])
         )
-        st.plotly_chart(fig_cost, width= "stretch") 
+        st.plotly_chart(fig_cost, width= "stretch", theme=None) 
         
     with col_b:
         st.markdown('<p class="plot-title">Latency Comparison (s)</p>', unsafe_allow_html=True)
-        fig_lat = go.Figure(go.Bar(x=models, y=latency, marker_color=COLORS['wine']))
+        fig_lat = go.Figure(go.Bar(x=models, y=latency, marker_color=COLORS['dgreen']))
         # Matching width and height
         fig_lat.update_layout(
             width=450, 
             height=250, 
-            margin=dict(t=10,b=10,l=10,r=10), 
+            margin=dict(t=20,b=40,l=50,r=10), 
             paper_bgcolor=COLORS['bg_white'], 
             plot_bgcolor='rgba(0,0,0,0)', 
             font=dict(size=10, color=COLORS['ink'])
         )
-        st.plotly_chart(fig_lat, width= "stretch") 
+        st.plotly_chart(fig_lat, width= "stretch",  theme=None) 
 # --- DUAL COLUMN LAYOUT ---
 col_left, col_right = st.columns([1, 2.3], gap="large")
 
 with col_left:
     # 3. NEW: Impact Metrics Box
-    # IMPACT BOX (Now Wine)
+    # IMPACT BOX (Now dgreen)
     st.markdown(f"""
         <div class="impact-box">
-            <h3 style="margin:0 0 15px 0; color:{COLORS['sand']}; border-bottom: 2px solid {COLORS['sand']}; padding-bottom:10px;">Impact Metrics</h3>
+            <h3 style="margin:0 0 15px 0; color:{COLORS['lgreen']}; border-bottom: 2px solid {COLORS['lgreen']}; padding-bottom:10px;">Impact Metrics</h3>
             <div class="metric-row"><span class="metric-label">Current SCI</span><span class="metric-value">{current_sci:.2f} mg</span></div>
             <div class="metric-row"><span class="metric-label">Session Avg SCI</span><span class="metric-value">{session_avg_sci:.2f} mg</span></div>
             <div class="metric-row"><span class="metric-label">Total Carbon Saved</span><span class="metric-value">{total_saved_mg:.2f} mg</span></div>
@@ -319,7 +362,7 @@ with col_left:
     # Grid Card
     st.markdown(f"""
         <div class="grid-card">
-            <h4 style="margin:0; color:{COLORS['sand']}; text-transform: uppercase; font-size: 0.8rem;">Live Grid Intensity</h4>
+            <h4 style="margin:0; color:{COLORS['dgreen']}; text-transform: uppercase; font-size: 0.8rem;">Live Grid Intensity</h4>
             <p style="font-size: 2.2rem; font-weight: 900; margin:5px 0;">{intensity} <span style="font-size: 0.9rem;">gCO₂/kWh</span></p>
         </div>
     """, unsafe_allow_html=True)
@@ -339,6 +382,13 @@ with col_right:
             with st.chat_message("assistant", avatar="🌿"):
                 st.markdown(f"**Model Selected: `{entry['model']}`**")
                 st.markdown(entry['response'])
+
+    # 1. ADD THIS: The File Uploader
+    uploaded_file = st.file_uploader(
+        "📎 Attach context (CSV, JSON, TXT)", 
+        type=['csv', 'json', 'txt'], 
+        label_visibility="collapsed" # Hides the default label for a cleaner UI
+    )
 
     if prompt := st.chat_input("Dispatch task..."):
         with chat_container:
