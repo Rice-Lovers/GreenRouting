@@ -34,12 +34,12 @@ if 'current_file' not in st.session_state:
 
 # --- NEXAVERSE COLOR PALETTE ---
 COLORS = {
-    "wine": "#4A2545",    
-    "sand": "#FBBF24",    
+    "dgreen": "#173E33",    
+    "lgreen": "#63BC69",    
     "blue": "#2B4162",    
-    "emerald": "#0B6E4F", 
-    "ink": "#031927",
-    "charcoal": "#0D1B2A",
+    "orange": "#FE9547 ", 
+    "ink": "#0F1E25",
+    "charcoal": "#0D1B2A", #didn't use
     "bg_white": "#FFFFFF"
 }
 
@@ -58,41 +58,42 @@ st.markdown(f"""
 
         .fixed-header {{
             position: fixed; top: 0; left: 0; width: 100%; height: 120px;
-            background-color: {COLORS['wine']} !important;
-            border-bottom: 4px solid {COLORS['sand']};
+            background-color: {COLORS['dgreen']} !important;
+            border-bottom: 4px solid {COLORS['lgreen']};
             z-index: 999; padding: 0px 60px; display: flex; align-items: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }}
 
         .mission-banner {{
             background: {COLORS['blue']}; color: white; padding: 20px; border-radius: 12px;
-            border-left: 8px solid {COLORS['sand']}; margin-bottom: 15px;
+            border-left: 8px solid {COLORS['lgreen']}; margin-bottom: 15px;
         }}
 
         /* COMPACT FILE UPLOADER STYLING */
+        /* FULL-WIDTH FILE UPLOADER STYLING */
         [data-testid="stFileUploadDropzone"] {{
-            padding: 0 !important;
-            border: none !important;
             background-color: transparent !important;
-            min-height: 45px !important;
+            border: 1px dashed {COLORS['lgreen']} !important;
+            border-radius: 12px !important;
+            padding: 15px !important;
+            min-height: auto !important;
         }}
-        [data-testid="stFileUploadDropzone"] div {{
-            display: none !important;
+        
+        /* Force text inside to be white */
+        [data-testid="stFileUploadDropzone"] * {{
+            color: {COLORS['bg_white']} !important;
         }}
-        [data-testid="stFileUploadDropzone"]::before {{
-            content: "📎";
-            font-size: 24px;
-            cursor: pointer;
-            visibility: visible;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 45px;
+        
+        /* Style the internal Browse Files button */
+        [data-testid="stBaseButton-secondary"] {{
+            background-color: {COLORS['dgreen']} !important;
+            color: {COLORS['bg_white']} !important;
+            border: 1px solid {COLORS['lgreen']} !important;
         }}
         
         .impact-box {{
-            background-color: {COLORS['wine']}; color: white; border-radius: 12px; padding: 20px;
-            margin-bottom: 20px; border-left: 8px solid {COLORS['sand']};
+            background-color: {COLORS['dgreen']}; color: white; border-radius: 12px; padding: 20px;
+            margin-bottom: 20px; border-left: 8px solid {COLORS['lgreen']};
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }}
         
@@ -102,11 +103,11 @@ st.markdown(f"""
         }}
         
         .metric-label {{ font-size: 0.85rem; color: #FFFFFF; opacity: 0.9; font-weight: 500; }}
-        .metric-value {{ font-size: 1rem; font-weight: bold; color: {COLORS['sand']}; }}
+        .metric-value {{ font-size: 1rem; font-weight: bold; color: {COLORS['lgreen']}; }}
 
         div.stButton > button {{
             border-radius: 20px !important;
-            background-color: {COLORS['sand']} !important;
+            background-color: {COLORS['lgreen']} !important;
             color: {COLORS['ink']} !important;
             font-weight: bold !important;
             border: none !important;
@@ -138,7 +139,7 @@ st.markdown(f"""
     <div class="fixed-header">
         <div class="header-content">
             <h1 style="color: white; font-size: 38px; letter-spacing: -1px;">🌿 GreenRouting</h1>
-            <p style="color: {COLORS['sand']}; font-size: 14px; text-transform: uppercase; font-weight: bold;">Agentic Decarbonization Engine</p>
+            <p style="color: {COLORS['lgreen']}; font-size: 14px; text-transform: uppercase; font-weight: bold;">Agentic Decarbonization Engine</p>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -149,7 +150,7 @@ st.write("")
 # --- 1. MISSION BANNER ---
 st.markdown(f"""
     <div class="mission-banner">
-        <h3 style="margin:0; color:{COLORS['sand']}; font-size: 1.2rem;">The Mission</h3>
+        <h3 style="margin:0; color:{COLORS['lgreen']}; font-size: 1.2rem;">The Mission</h3>
         <p style="font-size: 0.95rem; margin-top:5px; opacity:0.9;">Optimizing AI Software Carbon Intensity (SCI) through grid-aware routing.</p>
     </div>
 """, unsafe_allow_html=True)
@@ -171,22 +172,22 @@ with st.expander("📊 Comparative Analysis (Full Registry)", expanded=False):
     yaxis_config = dict(tickfont=dict(color='#333333', size=10), showgrid=True, gridcolor='lightgray')
 
     with col_a:
-        fig_cost = go.Figure(go.Bar(x=models, y=[0.06, 0.06, 0.08, 0.06, 0.90, 0.85, 0.95, 0.90], marker_color=COLORS['emerald']))
+        fig_cost = go.Figure(go.Bar(x=models, y=[0.06, 0.06, 0.08, 0.06, 0.90, 0.85, 0.95, 0.90], marker_color=COLORS['orange']))
         fig_cost.update_layout(
             title=dict(text="<b>Cost per 1k Tokens ($)</b>", font=dict(color='black', size=16)), 
             height=350, margin=dict(t=60, b=120, l=50, r=20), paper_bgcolor='white', plot_bgcolor='white',
             xaxis=xaxis_config, yaxis=yaxis_config
         )
-        st.plotly_chart(fig_cost, use_container_width=True, theme=None)
+        st.plotly_chart(fig_cost, width='stretch', theme=None)
         
     with col_b:
-        fig_lat = go.Figure(go.Bar(x=models, y=[0.4, 0.5, 0.4, 0.6, 1.8, 2.1, 1.7, 2.0], marker_color=COLORS['wine']))
+        fig_lat = go.Figure(go.Bar(x=models, y=[0.4, 0.5, 0.4, 0.6, 1.8, 2.1, 1.7, 2.0], marker_color=COLORS['dgreen']))
         fig_lat.update_layout(
             title=dict(text="<b>Latency (Seconds)</b>", font=dict(color='black', size=16)), 
             height=350, margin=dict(t=60, b=120, l=50, r=20), paper_bgcolor='white', plot_bgcolor='white',
             xaxis=xaxis_config, yaxis=yaxis_config
         )
-        st.plotly_chart(fig_lat, use_container_width=True, theme=None)
+        st.plotly_chart(fig_lat, width='stretch', theme=None)
 
 # --- DUAL COLUMN LAYOUT ---
 col_left, col_right = st.columns([1, 2.3], gap="large")
@@ -194,7 +195,7 @@ col_left, col_right = st.columns([1, 2.3], gap="large")
 with col_left:
     st.markdown(f"""
         <div class="impact-box">
-            <h3 style="margin:0 0 15px 0; color:{COLORS['sand']}; border-bottom: 2px solid {COLORS['sand']}; padding-bottom:10px;">Impact Metrics</h3>
+            <h3 style="margin:0 0 15px 0; color:{COLORS['lgreen']}; border-bottom: 2px solid {COLORS['lgreen']}; padding-bottom:10px;">Impact Metrics</h3>
             <div class="metric-row"><span class="metric-label">Current SCI</span><span class="metric-value">{current_sci:.2f} mg</span></div>
             <div class="metric-row"><span class="metric-label">Lifetime Carbon Saved</span><span class="metric-value">{display_lifetime:.2f} mg</span></div>
             <div class="metric-row"><span class="metric-label">Total Saved</span><span class="metric-value" style="color:#00FF00;">${total_monetary_saved:.2f}</span></div>
@@ -217,7 +218,7 @@ with col_left:
 
     st.markdown(f"""
         <div class="grid-card" style="margin-top:20px;">
-            <h4 style="margin:0; color:{COLORS['sand']}; text-transform: uppercase; font-size: 0.8rem;">Live Grid Intensity</h4>
+            <h4 style="margin:0; color:{COLORS['lgreen']}; text-transform: uppercase; font-size: 0.8rem;">Live Grid Intensity</h4>
             <p style="font-size: 2.2rem; font-weight: 900; margin:5px 0;">{intensity} <span style="font-size: 0.9rem;">gCO₂/kWh</span></p>
         </div>
     """, unsafe_allow_html=True)
@@ -233,7 +234,7 @@ with col_left:
     
     if not tier:
         st.warning(f"🔒 Milestone Locked. Save 3000.0mg to unlock.")
-        st.button("🏅 Generate Achievement Cert", disabled=True, use_container_width=True)
+        st.button("🏅 Generate Achievement Cert", disabled=True, width='stretch')
     else:
         st.success(f"🔓 {tier['tier']} Milestone Achieved!")
         pdf_bytes = reporter.generate_pdf_certificate(display_lifetime)
@@ -242,7 +243,7 @@ with col_left:
             data=pdf_bytes,
             file_name=f"Nexaverse_{tier['tier']}_Certificate.pdf",
             mime="application/pdf",
-            use_container_width=True
+            width='stretch'
         )
 
     if st.session_state.history:
@@ -252,7 +253,7 @@ with col_left:
             "Carbon Mitigated (mg)": audit['metrics']['total_mitigated_mg'],
             "Status": audit['compliance']['status']
         }])
-        st.download_button("📥 Download ESG Audit (CSV)", data=csv_df.to_csv(index=False), file_name=f"ESG_Audit_{company_name}.csv", use_container_width=True)
+        st.download_button("📥 Download ESG Audit (CSV)", data=csv_df.to_csv(index=False), file_name=f"ESG_Audit_{company_name}.csv", width='stretch')
 
 with col_right:
     st.markdown(f"<h3 style='color:{COLORS['bg_white']}; margin-top:0;'>💬 Carbon-Aware Agent</h3>", unsafe_allow_html=True)
@@ -273,18 +274,20 @@ with col_right:
 
     # --- CUSTOM COMPACT CHAT BAR ---
     st.write("")
-    c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
+    
+    # 1. Put the uploader on top (Full width)
+    uploaded_file = st.file_uploader("Attach", type=["png", "jpg", "pdf"], label_visibility="collapsed", key="local_uploader")
+    if uploaded_file:
+        st.session_state.current_file = uploaded_file.getvalue()
+        st.toast(f"📎 {uploaded_file.name} attached")
+
+    # 2. Put the text input and button side-by-side below it
+    c1, c2 = st.columns([0.85, 0.15])
     
     with c1:
-        uploaded_file = st.file_uploader("Attach", type=["png", "jpg", "pdf"], label_visibility="collapsed", key="local_uploader")
-        if uploaded_file:
-            st.session_state.current_file = uploaded_file.getvalue()
-            st.toast(f"📎 {uploaded_file.name} attached")
-
-    with c2:
         user_prompt = st.text_input("Message", placeholder="Dispatch task or ask about the grid...", label_visibility="collapsed")
 
-    with c3:
+    with c2:
         submit = st.button("Send", use_container_width=True)
 
     if submit and user_prompt:
